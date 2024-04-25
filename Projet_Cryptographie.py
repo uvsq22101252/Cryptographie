@@ -4,8 +4,8 @@
 def lfsr_17(seed):
     while True:
         yield seed
-        b = seed[2] ^ seed[16]
-        seed = [b] + seed[:-1]
+        b = seed[2] ^ seed[16]  # calcul valeur de retroaction, 2 et 16 correspondent aux coefficients de retroaction non nuls {14,0}
+        seed = [b] + seed[:-1]  # decalage de la seed
 
 
 def test_lfsr_17():
@@ -14,13 +14,13 @@ def test_lfsr_17():
     unique_states = set()  # Initialisation du set des états uniques
 
     for _ in range(2**17 - 1):
-        state = next(lfsr)
+        state = next(lfsr) # Générer l'état suivant
         unique_states.add(tuple(state))  # Ajout de l'état courant au set des états uniques
 
     if len(unique_states) == 2**17 - 1:  # Vérifier que tous les états possibles ont été générés
-        print("test_lfsr_17 passed successfully!")
+        print("l'état prend bien 2^17-1 valeurs différentes")
     else:
-        print("test_lfsr_17 failed!")
+        print("l'état ne prend pas 2^17-1 valeurs différentes,tess_lfsr_17 failed!")
 
 
 #test_lfsr_17()
@@ -32,7 +32,7 @@ def test_lfsr_17():
 def lfsr_25(seed):
     while True:
         yield seed
-        b = seed[12] ^ seed[20] ^ seed[21] ^ seed[24]
+        b = seed[12] ^ seed[20] ^ seed[21] ^ seed[24]  # calcul valeur de retroaction, 12, 20, 21, 24 correspondent aux coefficients de retroaction non nuls {12,4,3,0}
         seed = [b] + seed[:-1]
 
 
@@ -46,9 +46,9 @@ def test_lfsr_25():
         unique_states.add(tuple(state))  # Ajout de l'état courant au set des états uniques
 
     if len(unique_states) == 2**25 - 1:  # verifier que tous les états possibles ont été générés
-        print("test_lfsr_25 passed successfully!")
+        print("l'état prend bien 2^25-1 valeurs différentes")
     else:
-        print("test_lfsr_25 failed!")
+        print("l'état ne prend pas 2^17-1 valeurs différentes,tess_lfsr_17 failed!")
 
 #test_lfsr_25()
 
@@ -81,7 +81,7 @@ def CSS(s):
     c = 0
     z_list = ""
     str_z_list = []
-    for _ in range(5):
+    for _ in range(len(s)//8):
         x = [next(lfsr_17_state)[-1] for _ in range(8)]  # generer x
         x.reverse()
 
@@ -112,15 +112,29 @@ def encrypt_message(message, chiffre):  # fonction de chiffrement et dechiffreme
     result_binary = []  # initialisation de la liste du resultat en binaire
 
     for m in range(0, len(message_binary)):
-        xor = int(message_binary[m]) ^ int(chiffre[m])
+        xor = int(message_binary[m]) ^ int(chiffre[m]) # xor entre le message et le chiffre
         result_binary.append(str(xor))
 
     # Convert result to hexadecimal
-    result_hex = hex(int(''.join(result_binary), 2))
-    print("le chiffre est : ", result_hex)
+    result_hex = binary_to_hex(result_binary)  # convertis le resultat en hexadecimal
+    print("le chiffre/message est : ", result_hex)
     return result_hex
- 
 
-encrypt_message("0xffffffffff", CSS([0]*40))
 
-encrypt_message(encrypt_message("0xffffffffff", CSS([0]*40)), CSS([0]*40))
+def main():
+    choice = input("Choisissez une option:\n1. Test LFSR 17\n2. Test LFSR 25\n3. Chiffré un message\n4. Déchiffrer unmessage\n")
+
+    if choice == "1":
+        test_lfsr_17()
+    elif choice == "2":
+        test_lfsr_25()
+    elif choice == "3":
+        encrypt_message("0xffffffffff", CSS([0]*40))
+    elif choice == "4":
+        encrypt_message("0xffffb66c39", CSS([0]*40))
+    else:
+        print("Invalid choice")
+
+
+if __name__ == "__main__":
+    main()
