@@ -5,7 +5,7 @@ def lfsr_17(seed):
     while True:
         yield seed
         b = seed[2] ^ seed[16]  # calcul valeur de retroaction, 2 et 16 correspondent aux coefficients de retroaction non nuls {14,0}
-        seed = [b] + seed[:-1]  # decalage de la seed
+        seed = [b] + seed[:-1]  # insertion du nouveau bit, decalage des bits du lfsr
 
 
 def test_lfsr_17():
@@ -33,7 +33,7 @@ def lfsr_25(seed):
     while True:
         yield seed
         b = seed[12] ^ seed[20] ^ seed[21] ^ seed[24]  # calcul valeur de retroaction, 12, 20, 21, 24 correspondent aux coefficients de retroaction non nuls {12,4,3,0}
-        seed = [b] + seed[:-1]
+        seed = [b] + seed[:-1]  # insertion du nouveau bit, decalage des bits du lfsr
 
 
 def test_lfsr_25():
@@ -50,7 +50,8 @@ def test_lfsr_25():
     else:
         print("l'état ne prend pas 2^17-1 valeurs différentes,tess_lfsr_17 failed!")
 
-#test_lfsr_25()
+
+"""fonction permettant le changement de base (décimal,binaire,héxadécimal)"""
 
 
 def hex_to_binary(hex_num):
@@ -69,6 +70,9 @@ def binary_to_hex(binary_list):
 def binary_to_int(binary_list):
     return int(''.join(map(str, binary_list)), 2)
 
+def int_to_binary(int_num):
+    return bin(int_num)[2:].zfill(8)
+
 
 """Question 3: CSS et chiffrement et dechiffrement d'un message"""
 
@@ -78,22 +82,22 @@ def CSS(s):
     s2 = [1] + s[16:]  # ajout de 1 au début de la seed
     lfsr_17_state = lfsr_17(s1)  # Initialisation lfsr_17
     lfsr_25_state = lfsr_25(s2)  # Initialisation lfsr_25
-    c = 0
-    z_list = ""
-    str_z_list = []
+    c = 0  #initialisation de la retenue
+    z_list = ""  #initialisation du str
+    str_z_list = [] #initialisation de la liste
     for _ in range(len(s)//8):
         x = [next(lfsr_17_state)[-1] for _ in range(8)]  # generer x
-        x.reverse()
+        x.reverse() # inversion des elements dans la liste,permet d'obtenir le bon chiffré
 
         y = [next(lfsr_25_state)[-1] for _ in range(8)]  # generer y
-        y.reverse()
+        y.reverse() #inversion des elements dans la liste,permet d'obtenir le bon chiffré
 
         x = binary_to_int(x)  # convertis x en entier
         y = binary_to_int(y)  # convertis y en entier
 
         z = (x + y + c) % 256  # calcule de z
 
-        z_binary = bin(z)[2:].zfill(8)  # convertis z en binaire
+        z_binary = int_to_binary(z)  # convertis z en binaire
         z_list += (z_binary)  # ajout de z en binaire à la liste z_list
         
         if x + y > 255:  # calcul de la retenue
@@ -124,13 +128,13 @@ def encrypt_message(message, chiffre):  # fonction de chiffrement et dechiffreme
 def main():
     choice = input("Choisissez une option:\n1. Test LFSR 17\n2. Test LFSR 25\n3. Chiffré un message\n4. Déchiffrer unmessage\n")
 
-    if choice == "1":
+    if choice == "1": # si l'utilisateur entre la valeur 1, alors execution de la fonction test du LFSR 17
         test_lfsr_17()
-    elif choice == "2":
+    elif choice == "2": #si l'utilisateur entre la valeur 2, alors execution de la fonction test du LFSR 25
         test_lfsr_25()
-    elif choice == "3":
+    elif choice == "3": #si l'utilisateur entre la valeur 3, alors execution de la fonction pour chiffré le message (qui en meme temps gènere la clé avec CSS)
         encrypt_message("0xffffffffff", CSS([0]*40))
-    elif choice == "4":
+    elif choice == "4": #si l'utilisateur entre la valeur 4, alors execution de la fonction pour déchiffré le message (qui en meme temps gènere la clé avec CSS)
         encrypt_message("0xffffb66c39", CSS([0]*40))
     else:
         print("Invalid choice")
